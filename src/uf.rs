@@ -1,10 +1,12 @@
-pub use cth::CthlUF;
+pub use compressed::CompressedQuickUnionUF;
 pub use compressed_weighted::CompressedWeightedQuickUnionUF;
+pub use cth::CthlUF;
 pub use others::{QuickFindUF, QuickUnionUF, WeightedQuickUnionUF};
 pub use wc_adhoc::count_useful_edges;
 
-mod cth;
+mod compressed;
 mod compressed_weighted;
+mod cth;
 mod others;
 mod wc_adhoc;
 

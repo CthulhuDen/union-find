@@ -3,7 +3,10 @@ use std::io::{BufRead, BufReader};
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion, Throughput};
 
-use union_find::{CompressedWeightedQuickUnionUF, CthlUF, QuickFindUF, QuickUnionUF, UF, WeightedQuickUnionUF};
+use union_find::{
+    CompressedQuickUnionUF, CompressedWeightedQuickUnionUF, CthlUF, QuickFindUF, QuickUnionUF,
+    WeightedQuickUnionUF, UF,
+};
 
 #[derive(Clone)]
 struct TestCase {
@@ -63,8 +66,7 @@ fn run_fast_adhoc(case: TestCase) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let input: TestCase =
-        TestCase::from_file("mediumUF.txt", 622).unwrap();
+    let input: TestCase = TestCase::from_file("mediumUF.txt", 622).unwrap();
 
     let mut group = c.benchmark_group("medium");
     group.throughput(Throughput::Elements(900));
@@ -89,6 +91,13 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+    group.bench_function("compressed", |b| {
+        b.iter_batched(
+            || input.clone(),
+            |case| run_with_uf(case, CompressedQuickUnionUF::new),
+            BatchSize::SmallInput,
+        )
+    });
     group.bench_function("weighted_compressed", |b| {
         b.iter_batched(
             || input.clone(),
@@ -104,16 +113,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         )
     });
     group.bench_function("wc_adhoc", |b| {
-        b.iter_batched(
-            || input.clone(),
-            run_fast_adhoc,
-            BatchSize::SmallInput,
-        )
+        b.iter_batched(|| input.clone(), run_fast_adhoc, BatchSize::SmallInput)
     });
     group.finish();
 
-    let input: TestCase =
-        TestCase::from_file("largeUF.txt", 999994).unwrap();
+    let input: TestCase = TestCase::from_file("largeUF.txt", 999994).unwrap();
 
     let mut group = c.benchmark_group("large");
     group.throughput(Throughput::Elements(2_000_000));
@@ -124,6 +128,13 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+    group.bench_function("compressed", |b| {
+        b.iter_batched(
+            || input.clone(),
+            |case| run_with_uf(case, CompressedQuickUnionUF::new),
+            BatchSize::LargeInput,
+        )
+    });
     group.bench_function("weighted_compressed", |b| {
         b.iter_batched(
             || input.clone(),
@@ -139,11 +150,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         )
     });
     group.bench_function("wc_adhoc", |b| {
-        b.iter_batched(
-            || input.clone(),
-            run_fast_adhoc,
-            BatchSize::LargeInput,
-        )
+        b.iter_batched(|| input.clone(), run_fast_adhoc, BatchSize::LargeInput)
     });
     group.finish();
 }
